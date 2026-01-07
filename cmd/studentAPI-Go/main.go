@@ -1,9 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/Adityazzzzz/studentAPI-Go/intenal/config"
 )
@@ -34,10 +40,32 @@ TODO:
 		Addr: cfg.Addr,
 		Handler: router,
 	}
-	err:=server.ListenAndServe()
-	if err!=nil {
-		log.Fatal("Failed to start server")
-	}
 
-	fmt.Println("server started")
+	
+
+
+	//----------------------we prefer to run server in go-routines---------------------------
+
+	checkisInterrupt := make(chan os.Signal,1)
+	signal.Notify(checkisInterrupt, os.Interrupt, syscall.SIGINT, syscall.SIGTERM) //as a notification if there is interrupt
+
+	go func(){
+		err:=server.ListenAndServe()
+		if err!=nil {
+			log.Fatal("Failed to start server")
+		}
+	}()
+	
+	<-checkisInterrupt
+
+
+
+
+	// structured logs
+	slog.Info("shutting down the server")
+
+	// we cant directly shutdown. so,we use timer
+	ctx,cancel := context.WithTimeout(context.Background(),5*time.Second)
+	defer cancel()
+	server.Shutdown(ctx)
 }
