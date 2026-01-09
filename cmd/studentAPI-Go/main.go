@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Adityazzzzz/studentAPI-Go/intenal/config"
+	"github.com/Adityazzzzz/studentAPI-Go/intenal/http/handlers/students"
 )
 
 func main() {
@@ -30,9 +31,7 @@ TODO:
 
 //routes
 	router := http.NewServeMux()
-	router.HandleFunc("GET /", func(res http.ResponseWriter, req *http.Request){
-		res.Write([]byte("welcome to api"))
-	})
+	router.HandleFunc("GET /api/students", students.New())
 
 //server
 	server := http.Server{
